@@ -46,7 +46,7 @@ export const CuisineForm = ({
 
     const title = initialData ? 'Edit cuisine' : 'Create cuisine'
     const description = initialData ? "Edit a cuisine" : "Add a new cuisine"
-    const toastMessage = initialData ? 'cuisine Updated' : 'cuisine Created'
+    const toastMessage = initialData ? 'Cuisine Updated' : 'Cuisine Created'
     const action = initialData ? 'Save Changes' : "Create cuisine"
 
     const onSubmit = async (data: CuisineFormValues) => {

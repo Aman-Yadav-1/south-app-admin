@@ -7,6 +7,7 @@
   "plugins": ["@typescript-eslint"],
   "rules": {
     "@typescript-eslint/no-unused-vars": "warn",
-    "prefer-const": "warn"
+    "prefer-const": "warn",
+    "@typescript-eslint/no-explicit-any": "warn"
   }
 }

@@ -1,4 +1,5 @@
-import { db } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
+import { Product } from "@/types-db";
 import { auth } from "@clerk/nextjs/server";
 import { 
   deleteDoc, 
@@ -7,6 +8,7 @@ import {
   serverTimestamp, 
   updateDoc 
 } from "firebase/firestore";
+import { deleteObject, ref } from "firebase/storage";
 import { NextResponse } from "next/server";
 
 // Helper function to validate request
@@ -160,6 +162,16 @@ export async function DELETE(
       return new NextResponse("Product not found", { status: 404 });
     }
 
+    // Delete product images
+    const images = productDoc.data()?.images || [];
+
+    if(!images && Array.isArray(images)){
+      await Promise.all(images.map(async (image) => {
+        const imageRef = ref(storage, image.url);
+        await deleteObject(imageRef);
+      }));
+    }
+
     // Delete product
     await deleteDoc(productRef);
 
@@ -170,4 +182,40 @@ export async function DELETE(
     console.error("[PRODUCT_DELETE]", error);
     return new NextResponse("Internal server error", { status: 500 });
   }
+};
+
+export const GET = async (
+  req: Request,
+  {params}:{params:{storeId:string; productId:string}}
+) => {
+try {
+  // Validate input parameters
+  if(!params.storeId){
+      return new NextResponse("Store Id is missing", {status: 400})
+  }
+
+  if(!params.productId){
+      return new NextResponse("Product Id is missing", {status: 400})
+  }
+
+  // Get the product document reference
+  const productRef = doc(db, "stores", params.storeId, "products", params.productId);
+  
+  // Fetch the product document
+  const productSnapshot = await getDoc(productRef);
+
+  // Check if product exists
+  if (!productSnapshot.exists()) {
+      return new NextResponse("Product not found", { status: 404 });
+  }
+
+  // Safely extract product data
+  const product = productSnapshot.data() as Product;
+
+  return NextResponse.json(product);
 }
+catch(error){
+  console.error(`[PRODUCT_GET]: ${error}`);
+  return new NextResponse("Internal error", {status: 500})
+}
+};

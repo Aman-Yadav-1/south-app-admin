@@ -1,25 +1,28 @@
-'use client'
-import Image from "next/image"
+import Image from "next/image";
 
 interface CellImageProps {
-  data: string[]
+  data: string[];
 }
 
-const CellImage = ({data}:CellImageProps) => {
+const CellImage: React.FC<CellImageProps> = ({ data }) => {
+  if (!data?.length) {
+    return null;
+  }
+
   return (
-    <>
-    {data.map((url, index) => (
-        <div key={index} className="overflow-hidden w-16 h-16 min-w-16 min-h-16 aspect-square rounded-md flex items-center justify-center">
+    <div className="flex items-center gap-x-2">
+      {data.map((url, index) => (
+        <div key={index} className="relative w-12 h-12">
           <Image
             src={url}
-            alt="Image"
             fill
-            className="object-contain"
+            alt="Product Image"
+            className="object-cover rounded-md"
           />
         </div>
       ))}
-    </>
-  )
-}
+    </div>
+  );
+};
 
-export default CellImage
+export default CellImage;

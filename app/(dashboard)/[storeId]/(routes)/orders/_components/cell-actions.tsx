@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, Eye, MoreVertical, Trash } from "lucide-react";
+import { Copy, Edit, Eye, MoreVertical, Trash } from "lucide-react";
 import { AlertModal } from "@/components/Modal/alert-modal";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -44,6 +44,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
       await axios.delete(`/api/${params.storeId}/orders/${data.id}`);
       
       toast.success("Order deleted successfully");
+      router.push(`/${params.storeId}/orders`);
       location.reload();
     } catch (error) {
       toast.error("Failed to delete order. Please try again.");
@@ -51,6 +52,22 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     } finally {
       setIsLoading(false);
       setShowDeleteModal(false);
+    }
+  };
+
+  const onUpdate = async (data:any) => {
+    try {
+      setIsLoading(true);
+      
+      await axios.patch(`/api/${params.storeId}/orders/${data.id}`, data);
+      
+      toast.success("Order Updated successfully");
+      router.push(`/${params.storeId}/orders`);
+      location.reload();
+    } catch (error) {
+      toast.error("Failed to update order. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,6 +102,30 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
             <Copy className="h-4 w-4 mr-2" />
             Copy Order ID
           </DropdownMenuItem>
+
+          <DropdownMenuItem 
+            onClick={() => onUpdate({id: data.id, order_status: "Delivering"})}
+            className="flex items-center cursor-pointer"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Delivering
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem 
+            onClick={() => onUpdate({id: data.id, order_status: "Delivered"})}
+            className="flex items-center cursor-pointer"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Delivered
+          </DropdownMenuItem>
+
+          <DropdownMenuItem 
+            onClick={() => onUpdate({id: data.id, order_status: "Canceled"})}
+            className="flex items-center cursor-pointer"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Cancel
+          </DropdownMenuItem>
           
           <DropdownMenuItem 
             onClick={() => router.push(`/${params.storeId}/orders/${data.id}`)}
@@ -104,5 +145,4 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuContent>
       </DropdownMenu>
     </>
-  );
-};
+  );};

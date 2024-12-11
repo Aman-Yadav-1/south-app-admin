@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { AlertModal } from "@/components/Modal/alert-modal"
-import { Size } from "@/types-db"
+import { Order } from "@/types-db"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
@@ -21,44 +21,44 @@ const formSchema = z.object({
     value: z.string().min(1, "Value is required"),
 })
 
-type SizeFormValues = z.infer<typeof formSchema>
+type OrderFormValues = z.infer<typeof formSchema>
 
-interface SizeFormProps {
-    initialData: Size | null
+interface OrderFormProps {
+    initialData: Order | null
 }
 
-export const SizeForm = ({
+export const OrderForm = ({
     initialData
-}: SizeFormProps) => {
+}: OrderFormProps) => {
     const params = useParams()
     const router = useRouter()
 
     const [isLoading, setIsLoading] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
 
-    const form = useForm<SizeFormValues>({
+    const form = useForm<OrderFormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: initialData?.name || '',
-            value: initialData?.value || ''
+            name: "",
+            value: "",
         }
     })
 
-    const title = initialData ? 'Edit size' : 'Create size'
-    const description = initialData ? "Edit a size" : "Add a new size"
-    const toastMessage = initialData ? 'Size Updated' : 'Size Created'
-    const action = initialData ? 'Save Changes' : "Create Size"
+    const title = initialData ? 'Edit Order' : 'Create Order'
+    const description = initialData ? "Edit a Order" : "Add a new Order"
+    const toastMessage = initialData ? 'Order Updated' : 'Order Created'
+    const action = initialData ? 'Save Changes' : "Create Order"
 
-    const onSubmit = async (data: SizeFormValues) => {
+    const onSubmit = async (data: OrderFormValues) => {
         try {
             setIsLoading(true)
             if (initialData) {
-                await axios.patch(`/api/${params.storeId}/sizes/${params.sizeId}`, data)
+                await axios.patch(`/api/${params.storeId}/orders/${params.orderId}`, data)
             } else {
-                await axios.post(`/api/${params.storeId}/sizes`, data)
+                await axios.post(`/api/${params.storeId}/orders`, data)
             }
             router.refresh()
-            router.push(`/${params.storeId}/sizes`)
+            router.push(`/${params.storeId}/orders`)
             toast.success(toastMessage)
         } catch (error) {
             toast.error("Something went wrong")
@@ -71,12 +71,12 @@ export const SizeForm = ({
     const onDelete = async () => {
         try {
             setIsLoading(true)
-            await axios.delete(`/api/${params.storeId}/sizes/${params.sizeId}`)
+            await axios.delete(`/api/${params.storeId}/orders/${params.orderId}`)
             router.refresh()
-            router.push(`/${params.storeId}/sizes`)
-            toast.success("Size Removed")
+            router.push(`/${params.storeId}/orders`)
+            toast.success("Order Removed")
         } catch (error) {
-            toast.error("Make sure you removed all products using this size first")
+            toast.error("Make sure you removed all products using this Order first")
         } finally {
             setIsLoading(false)
             setIsOpen(false)
@@ -117,7 +117,7 @@ export const SizeForm = ({
                                     <FormControl>
                                         <Input 
                                             disabled={isLoading} 
-                                            placeholder="Your Size name..." 
+                                            placeholder="Your Order name..." 
                                             {...field} 
                                         />
                                     </FormControl>
@@ -134,7 +134,7 @@ export const SizeForm = ({
                                     <FormControl>
                                         <Input 
                                             disabled={isLoading} 
-                                            placeholder="Your Size value..." 
+                                            placeholder="Your Order value..." 
                                             {...field} 
                                         />
                                     </FormControl>

@@ -89,7 +89,7 @@ export const GET = async (req: Request,
 ) => {
     try {
         if (!params.storeId) {
-            return new NextResponse("Store Id is missing", { status: 401 })
+            return new NextResponse("Store Id is missing", { status: 400 })
         }
 
         //get the searchParams from the req.url
