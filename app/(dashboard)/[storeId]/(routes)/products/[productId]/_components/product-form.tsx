@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { z } from "zod"
 import axios from "axios"
@@ -17,7 +17,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Checkbox } from "@/components/ui/checkbox"
 import ImagesUpload from "@/components/images-upload"
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 
 const formSchema = z.object({
     name: z.string().trim().min(1, "Name is required").max(100, "Name must be 100 characters or less"),

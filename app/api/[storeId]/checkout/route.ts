@@ -4,7 +4,6 @@ import {stripe} from '@/lib/stripe'
 import {db} from '@/lib/firebase'
 import { Product } from '@/types-db'
 import {addDoc, collection, doc, serverTimestamp,updateDoc} from 'firebase/firestore'
-import { create } from 'domain'
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",

@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import {addDoc, collection, doc, serverTimestamp,updateDoc} from 'firebase/firestore'
+import { doc, serverTimestamp,updateDoc} from 'firebase/firestore'
 import { db } from "@/lib/firebase";
 
 

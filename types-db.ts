@@ -14,6 +14,8 @@ export interface Billboards{
     imageUrl: string,
     createdAt?: Timestamp;
     updatedAt?: Timestamp;
+    storeId: string;
+    billboardId:string
 }
 
 export interface Category{

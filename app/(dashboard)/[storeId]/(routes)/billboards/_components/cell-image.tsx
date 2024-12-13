@@ -1,7 +1,6 @@
 'use client'
 
 import Image from "next/image"
-import { BillboardColumns } from "./columns"
 
 interface CellImageProps{
     imageUrl: string
