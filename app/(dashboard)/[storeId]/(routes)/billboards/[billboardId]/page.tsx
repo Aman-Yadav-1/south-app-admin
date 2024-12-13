@@ -3,12 +3,16 @@ import { db } from "@/lib/firebase";
 import { Billboards } from "@/types-db";
 import { BillboardForm } from "./_components/billboard-form";
 
-const BillboardPage = async({ 
-  params 
-}: { 
-  params: { storeId: string; billboardId: string } 
-}) => {
-  const billboard = (await getDoc(doc(db, "stores", params.storeId, "billboards", params.billboardId))).data() as Billboards;
+type Props = {
+  params: {
+      billboardId: string;
+      storeId: string;
+  }
+}
+
+const BillboardPage = async ({ params }: Props): Promise<JSX.Element> => {
+  const billboardDoc = await getDoc(doc(db, "stores", params.storeId, "billboards", params.billboardId));
+  const billboard = billboardDoc.data() as Billboards;
 
   return (
     <div className="flex-col">
@@ -17,5 +21,6 @@ const BillboardPage = async({
       </div>
     </div>
   );
-}
+};
+
 export default BillboardPage;

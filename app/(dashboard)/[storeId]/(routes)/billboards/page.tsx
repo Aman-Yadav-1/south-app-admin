@@ -7,7 +7,6 @@ import { BillboardColumns } from './_components/columns'
 import {format} from 'date-fns'
 
 const BillboardsPage = async ({params}:{params:{storeId:string}}) => {
-  
   const billboardsData = (
     await getDocs(
       collection(doc(db,"stores",params.storeId), "billboards")
