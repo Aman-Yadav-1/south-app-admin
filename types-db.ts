@@ -76,4 +76,5 @@ export interface Order{
     order_status: string,
     createdAt?: Timestamp;
     updatedAt?: Timestamp;
+    customerName?: string;
 }

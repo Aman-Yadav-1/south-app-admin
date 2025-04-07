@@ -9,12 +9,12 @@ const poppins = Poppins({subsets: ['latin'], weight: ["100","200","300","400","5
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | South Food Admin',
-    default: 'South Food Admin'
+    template: '%s | Lavish Cafe',
+    default: 'Lavish Cafe Admin'
   },
   description: "Admin dashboard for South Food restaurant management",
-  keywords: ['restaurant', 'admin', 'food', 'management', 'south food'],
-  authors: [{ name: 'South Food' }],
+  keywords: ['restaurant', 'admin', 'food', 'management', 'lavish cafe','cafe','coffee'],
+  authors: [{ name: 'Lavish Cafe' }],
   viewport: 'width=device-width, initial-scale=1',
   robots: {
     index: false,

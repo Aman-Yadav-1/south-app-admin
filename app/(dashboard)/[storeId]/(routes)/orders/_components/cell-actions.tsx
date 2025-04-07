@@ -7,14 +7,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, Eye, MoreVertical, Trash } from "lucide-react";
+import { Check, Copy, Edit, MoreHorizontal, Printer, Truck, X } from "lucide-react";
 import { AlertModal } from "@/components/Modal/alert-modal";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { OrderColumns } from "./columns";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface CellActionProps {
   data: OrderColumns;
@@ -26,6 +30,8 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [orderStatus, setOrderStatus] = useState(data.order_status);
 
   const onCopy = async (id: string) => {
     try {
@@ -45,7 +51,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
       
       toast.success("Order deleted successfully");
       router.push(`/${params.storeId}/orders`);
-      location.reload();
+      router.refresh();
     } catch (error) {
       toast.error("Failed to delete order. Please try again.");
       console.error("[ORDER_DELETE_ERROR]", error);
@@ -55,20 +61,28 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     }
   };
 
-  const onUpdate = async (data:any) => {
+  const onUpdate = async () => {
     try {
       setIsLoading(true);
       
-      await axios.patch(`/api/${params.storeId}/orders/${data.id}`, data);
+      await axios.patch(`/api/${params.storeId}/orders/${data.id}`, {
+        order_status: orderStatus
+      });
       
-      toast.success("Order Updated successfully");
-      router.push(`/${params.storeId}/orders`);
-      location.reload();
+      toast.success("Order status updated successfully");
+      router.refresh();
     } catch (error) {
       toast.error("Failed to update order. Please try again.");
+      console.error("[ORDER_UPDATE_ERROR]", error);
     } finally {
       setIsLoading(false);
+      setShowUpdateModal(false);
     }
+  };
+
+  const printOrder = () => {
+    // Implement print functionality
+    toast.success("Print functionality would be implemented here");
   };
 
   return (
@@ -78,8 +92,49 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={onDelete}
         loading={isLoading}
-        description="Are you sure you want to delete this order?"
+        description="Are you sure you want to delete this order? This action cannot be undone."
       />
+      
+      <Dialog open={showUpdateModal} onOpenChange={setShowUpdateModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Order Status</DialogTitle>
+            <DialogDescription>
+              Change the status of order #{data.id.substring(0, 8)}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="status">Order Status</Label>
+              <Select
+                value={orderStatus}
+                onValueChange={setOrderStatus}
+                disabled={isLoading}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Processing">Processing</SelectItem>
+                  <SelectItem value="Delivering">Delivering</SelectItem>
+                  <SelectItem value="Delivered">Delivered</SelectItem>
+                  <SelectItem value="Canceled">Canceled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUpdateModal(false)} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button onClick={onUpdate} disabled={isLoading}>
+              {isLoading ? "Updating..." : "Update Status"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -88,12 +143,12 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
             className="h-8 w-8 p-0 focus-visible:ring-2 focus-visible:ring-offset-2"
           >
             <span className="sr-only">Open menu</span>
-            <MoreVertical className="h-4 w-4" />
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-[200px]">
+          <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
           
           <DropdownMenuItem 
             onClick={() => onCopy(data.id)}
@@ -102,47 +157,34 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
             <Copy className="h-4 w-4 mr-2" />
             Copy Order ID
           </DropdownMenuItem>
-
+          
           <DropdownMenuItem 
-            onClick={() => onUpdate({id: data.id, order_status: "Delivering"})}
+            onClick={() => setShowUpdateModal(true)}
             className="flex items-center cursor-pointer"
           >
-            <Edit className="h-4 w-4 mr-2" />
-            Delivering
+            <Truck className="h-4 w-4 mr-2" />
+            Update Status
           </DropdownMenuItem>
           
           <DropdownMenuItem 
-            onClick={() => onUpdate({id: data.id, order_status: "Delivered"})}
+            onClick={printOrder}
             className="flex items-center cursor-pointer"
           >
-            <Edit className="h-4 w-4 mr-2" />
-            Delivered
-          </DropdownMenuItem>
-
-          <DropdownMenuItem 
-            onClick={() => onUpdate({id: data.id, order_status: "Canceled"})}
-            className="flex items-center cursor-pointer"
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Cancel
+            <Printer className="h-4 w-4 mr-2" />
+            Print Order
           </DropdownMenuItem>
           
-          <DropdownMenuItem 
-            onClick={() => router.push(`/${params.storeId}/orders/${data.id}`)}
-            className="flex items-center cursor-pointer"
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            View Details
-          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           
           <DropdownMenuItem
             onClick={() => setShowDeleteModal(true)}
             className="flex items-center cursor-pointer text-red-600 focus:text-red-600"
           >
-            <Trash className="h-4 w-4 mr-2" />
-            Delete
+            <X className="h-4 w-4 mr-2" />
+            Delete Order
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </>
-  );};
+  );
+};

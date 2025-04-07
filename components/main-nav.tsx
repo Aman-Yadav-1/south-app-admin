@@ -53,6 +53,16 @@ const MainNav = ({
             active: pathname === `/${params.storeId}/orders`,
         },
         {
+            href: `/${params.storeId}/invoices`,
+            label: "Invoices",
+            active: pathname === `/${params.storeId}/invoices`,
+        },
+        {
+            href: `/${params.storeId}/inventory`,
+            label: "Inventory",
+            active: pathname === `/${params.storeId}/inventory`,
+        },
+        {
             href: `/${params.storeId}/settings`,
             label: "Settings",
             active: pathname === `/${params.storeId}/settings`,
