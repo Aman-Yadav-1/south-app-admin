@@ -10,6 +10,7 @@
     "prefer-const": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "react-hooks/exhaustive-deps": "off",
-    "@next/next/no-async-client-component": "off"
+    "@next/next/no-async-client-component": "off",
+    "react/no-unescaped-entities": "off"
   }
 }
