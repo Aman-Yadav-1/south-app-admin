@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase'
-import { Category, Cuisine, Kitchen, Product, Size } from '@/types-db'
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
+import { Product } from '@/types-db'
+import { doc, getDoc } from 'firebase/firestore'
 import React from 'react'
 import { ProductForm } from './_components/product-form'
 
@@ -10,39 +10,25 @@ const ProductPage = async ({ params }: {
     storeId: string
   }
 }) => {
+  // For new products
+  if (params.productId === "new") {
+    return (
+      <div className='flex-col'>
+        <div className='flex-1 space-y-4 p-8 pt-6'>
+          <ProductForm initialData={null} />
+        </div>
+      </div>
+    )
+  }
 
+  // For existing products
   const product = (await getDoc(doc(db, "stores", params.storeId, "products", params.productId))).data() as Product;
-
-  const categoriesData = (
-    await getDocs(
-      collection(doc(db, "stores", params.storeId), "categories")
-    )).docs.map(doc => doc.data()) as Category[]
-
-  const sizesData = (
-    await getDocs(
-      collection(doc(db, "stores", params.storeId), "sizes")
-    )).docs.map(doc => doc.data()) as Size[]
-
-  const kitchensData = (
-    await getDocs(
-      collection(doc(db, "stores", params.storeId), "kitchens")
-    )).docs.map(doc => doc.data()) as Kitchen[]
-
-  const cuisinesData = (
-    await getDocs(
-      collection(doc(db, "stores", params.storeId), "cuisines")
-    )).docs.map(doc => doc.data()) as Cuisine[]
 
   return (
     <div className='flex-col'>
       <div className='flex-1 space-y-4 p-8 pt-6'>
-        <ProductForm 
-          initialData={product} 
-          categories={categoriesData} 
-          sizes={sizesData} 
-          kitchens={kitchensData} 
-          cuisines={cuisinesData} 
-        /></div>
+        <ProductForm initialData={product} />
+      </div>
     </div>
   )
 }

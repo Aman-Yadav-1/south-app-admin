@@ -1,138 +1,185 @@
-'use client'
+"use client";
 
-import React from "react"
-import { Heading } from "@/components/heading"
-import { useParams, useRouter } from "next/navigation"
-import { DataTable } from "@/components/ui/data-table"
-import { columns, OrderColumns } from "./columns"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Download, RefreshCcw } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react";
+import { useParams } from "next/navigation";
+import { Heading } from "@/components/heading";
+import { Separator } from "@/components/ui/separator";
+import { DataTable } from "@/components/ui/data-table";
+import { OrderColumn, columns } from "./columns";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
-interface OrdersClientProps {
-  data: OrderColumns[]
+interface OrderClientProps {
+  data: OrderColumn[];
 }
 
-export const OrdersClient = ({ data }: OrdersClientProps) => {
-    const router = useRouter()
-    const params = useParams()
+export const OrderClient: React.FC<OrderClientProps> = ({ data }) => {
+  const params = useParams();
+  const [filteredData, setFilteredData] = useState(data);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
+
+  // Calculate stats
+  const totalOrders = data.length;
+  const paidOrders = data.filter(order => order.isPaid).length;
+  const pendingOrders = data.filter(order => !order.isPaid).length;
+  const totalRevenue = data.reduce((total, order) => {
+    const price = parseFloat(order.totalPrice.replace('₹', ''));
+    return total + (order.isPaid ? price : 0);
+  }, 0);
+
+  // Apply filters
+  const applyFilters = () => {
+    let result = [...data];
     
-    // Calculate statistics
-    const totalOrders = data.length;
-    const paidOrders = data.filter(order => order.isPaid).length;
-    const pendingOrders = data.filter(order => !order.isPaid).length;
-    const totalRevenue = data.reduce((sum, order) => {
-      return sum + parseFloat(order.totalPrice.replace(/[^0-9.-]+/g, ""));
-    }, 0);
-
-    const handleExport = () => {
-      const csvContent = [
-        ["Order ID", "Customer Name", "Total Price", "Payment Status", "Order Date"],
-        ...data.map(order => [
-          order.id,
-          order.customerName,
-          order.totalPrice,
-          order.isPaid ? "Paid" : "Pending",
-          order.orderDate
-        ])
-      ]
-        .map(row => row.join(","))
-        .join("\n");
-
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", "orders.csv");
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    // Apply status filter
+    if (statusFilter !== "all") {
+      result = result.filter(order => 
+        order.order_status.toLowerCase() === statusFilter.toLowerCase()
+      );
     }
+    
+    // Apply payment filter
+    if (paymentFilter !== "all") {
+      const isPaid = paymentFilter === "paid";
+      result = result.filter(order => order.isPaid === isPaid);
+    }
+    
+    setFilteredData(result);
+  };
 
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <Heading
-                    title={`Orders Management`}
-                    description="View and manage your store orders"
-                />
-                <div className="flex items-center gap-4">
-                    <Button 
-                        variant="outline" 
-                        onClick={() => router.refresh()}
-                        className="gap-2"
-                    >
-                        <RefreshCcw className="h-4 w-4" />
-                        Refresh
-                    </Button>
-                    <Button 
-                        onClick={handleExport}
-                        className="gap-2"
-                    >
-                        <Download className="h-4 w-4" />
-                        Export
-                    </Button>
-                </div>
-            </div>
+  // Handle filter changes
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setTimeout(() => {
+      applyFilters();
+    }, 0);
+  };
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                    <CardHeader className="pb-2 pt-4 px-4">
-                        <p className="text-sm text-muted-foreground">Total Orders</p>
-                    </CardHeader>
-                    <CardContent className="px-4 py-2">
-                        <div className="text-2xl font-bold">{totalOrders}</div>
-                        <Badge className="mt-1">All time</Badge>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2 pt-4 px-4">
-                        <p className="text-sm text-muted-foreground">Paid Orders</p>
-                    </CardHeader>
-                    <CardContent className="px-4 py-2">
-                        <div className="text-2xl font-bold text-green-600">{paidOrders}</div>
-                        <Badge variant="outline" className="mt-1 bg-green-50">
-                            {totalOrders ? ((paidOrders/totalOrders)*100).toFixed(1) : 0}%
-                        </Badge>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2 pt-4 px-4">
-                        <p className="text-sm text-muted-foreground">Pending Payments</p>
-                    </CardHeader>
-                    <CardContent className="px-4 py-2">
-                        <div className="text-2xl font-bold text-red-600">{pendingOrders}</div>
-                        <Badge variant="outline" className="mt-1 bg-red-50">
-                            {totalOrders ? ((pendingOrders/totalOrders)*100).toFixed(1) : 0}%
-                        </Badge>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2 pt-4 px-4">
-                        <p className="text-sm text-muted-foreground">Total Revenue</p>
-                    </CardHeader>
-                    <CardContent className="px-4 py-2">
-                        <div className="text-2xl font-bold">₹ {totalRevenue.toFixed(2)}</div>
-                        <Badge variant="secondary" className="mt-1">From {totalOrders} orders</Badge>
-                    </CardContent>
-                </Card>
-            </div>
+  const handlePaymentFilterChange = (value: string) => {
+    setPaymentFilter(value);
+    setTimeout(() => {
+      applyFilters();
+    }, 0);
+  };
 
-            <Card>
-                <CardHeader className="pb-0">
-                    <h3 className="text-lg font-medium">Order List ({data.length})</h3>
-                </CardHeader>
-                <CardContent className="pt-4">
-                    <DataTable 
-                        searchKey="products" 
-                        columns={columns} 
-                        data={data}
-                        searchPlaceholder="Search by product name..."
-                    />
-                </CardContent>
-            </Card>
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <Heading
+          title={`Orders (${totalOrders})`}
+          description="Manage your store orders"
+        />
+      </div>
+      <Separator />
+      
+      {/* Stats Cards */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-4 mb-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Orders
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalOrders}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              Paid Orders
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{paidOrders}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {((paidOrders / totalOrders) * 100).toFixed(1)}% of total orders
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              Pending Payment
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingOrders}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {((pendingOrders / totalOrders) * 100).toFixed(1)}% of total orders
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Revenue
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₹{totalRevenue.toFixed(2)}</div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <div className="w-full sm:w-1/2 md:w-1/4">
+          <Label htmlFor="status-filter">Filter by Status</Label>
+          <Select
+            value={statusFilter}
+            onValueChange={handleStatusFilterChange}
+          >
+            <SelectTrigger id="status-filter">
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-    )
-}
+        
+        <div className="w-full sm:w-1/2 md:w-1/4">
+          <Label htmlFor="payment-filter">Filter by Payment</Label>
+          <Select
+            value={paymentFilter}
+            onValueChange={handlePaymentFilterChange}
+          >
+            <SelectTrigger id="payment-filter">
+              <SelectValue placeholder="All Payments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Payments</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="unpaid">Unpaid</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      <DataTable 
+        searchKey="customerName" 
+        columns={columns} 
+        data={filteredData} 
+      />
+    </>
+  );
+};

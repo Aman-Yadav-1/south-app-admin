@@ -1,37 +1,65 @@
 "use client";
 
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { 
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { toast } from "react-hot-toast";
+import {
+  Copy,
+  Edit,
+  MoreVertical,
+  Trash,
+  FileText,
+  Eye,
+  CheckCircle,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Copy, MoreHorizontal, Printer, Truck, X } from "lucide-react";
 import { AlertModal } from "@/components/Modal/alert-modal";
-import axios from "axios";
-import toast from "react-hot-toast";
-import { OrderColumns } from "./columns";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { OrderColumn } from "./columns";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { db } from "@/lib/firebase";
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 interface CellActionProps {
-  data: OrderColumns;
+  data: OrderColumn;
 }
 
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const router = useRouter();
   const params = useParams();
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [orderStatus, setOrderStatus] = useState(data.order_status);
+  const [paymentStatus, setPaymentStatus] = useState(data.isPaid);
+  const [showViewModal, setShowViewModal] = useState(false);
 
   const onCopy = async (id: string) => {
     try {
@@ -45,161 +73,266 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const onDelete = async () => {
     try {
       setIsLoading(true);
-      
-      // First close the modal to prevent UI issues
-      setShowDeleteModal(false);
-      
-      // Then delete the order
-      await axios.delete(`/api/${params.storeId}/orders/${data.id}`);
-      
-      // Show success message
+
+      // Delete from Firestore
+      await deleteDoc(
+        doc(db, "stores", params.storeId as string, "orders", data.id)
+      );
+
       toast.success("Order deleted successfully");
-      
-      // Use a timeout to ensure the UI has time to update before refreshing
-      setTimeout(() => {
-        router.refresh();
-      }, 300);
-      
+      router.refresh();
     } catch (error) {
+      console.error("Error deleting order:", error);
       toast.error("Failed to delete order. Please try again.");
-      console.error("[ORDER_DELETE_ERROR]", error);
+    } finally {
       setIsLoading(false);
+      setShowDeleteModal(false);
     }
   };
 
-  const onUpdate = async () => {
+  const onUpdateStatus = async () => {
     try {
       setIsLoading(true);
-      
-      // First close the modal to prevent UI issues
-      setShowUpdateModal(false);
-      
-      // Then update the order
-      await axios.patch(`/api/${params.storeId}/orders/${data.id}`, {
-        order_status: orderStatus
-      });
-      
-      // Show success message
-      toast.success("Order status updated successfully");
-      
-      // Use a timeout to ensure the UI has time to update before refreshing
-      setTimeout(() => {
-        router.refresh();
-      }, 300);
-      
-    } catch (error) {
-      toast.error("Failed to update order. Please try again.");
-      console.error("[ORDER_UPDATE_ERROR]", error);
-      setIsLoading(false);
-    }
-  };
 
-  const printOrder = () => {
-    toast.success("Print functionality would be implemented here");
+      // Update order status in Firestore
+      await updateDoc(
+        doc(db, "stores", params.storeId as string, "orders", data.id),
+        {
+          order_status: orderStatus,
+          isPaid: paymentStatus,
+        }
+      );
+
+      toast.success("Order status updated successfully");
+      router.refresh();
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      toast.error("Failed to update order status. Please try again.");
+    } finally {
+      setIsLoading(false);
+      setShowUpdateModal(false);
+    }
   };
 
   return (
     <>
-      <AlertModal 
+      <AlertModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={onDelete}
         loading={isLoading}
-        description="Are you sure you want to delete this order? This action cannot be undone."
       />
-      
-      <Dialog open={showUpdateModal} onOpenChange={(open) => {
-        if (!isLoading) setShowUpdateModal(open);
-      }}>
-        <DialogContent className="bg-white">
+
+      {/* Update Status Modal */}
+      <Dialog open={showUpdateModal} onOpenChange={setShowUpdateModal}>
+        <DialogContent className="bg-white dark:bg-slate-900">
           <DialogHeader>
             <DialogTitle>Update Order Status</DialogTitle>
             <DialogDescription>
               Change the status of order #{data.id.substring(0, 8)}
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="grid gap-4 py-4 bg-white">
-            <div className="grid gap-2">
-              <Label htmlFor="status">Order Status</Label>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="order-status" className="text-right">
+                Order Status
+              </Label>
               <Select
                 value={orderStatus}
                 onValueChange={setOrderStatus}
                 disabled={isLoading}
               >
-                <SelectTrigger id="status">
+                <SelectTrigger id="order-status" className="col-span-3">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="Pending">Pending</SelectItem>
                   <SelectItem value="Processing">Processing</SelectItem>
-                  <SelectItem value="Delivering">Delivering</SelectItem>
-                  <SelectItem value="Delivered">Delivered</SelectItem>
-                  <SelectItem value="Canceled">Canceled</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="payment-status" className="text-right">
+                Payment Status
+              </Label>
+              <Select
+                value={paymentStatus ? "Paid" : "Unpaid"}
+                onValueChange={(value) => setPaymentStatus(value === "Paid")}
+                disabled={isLoading}
+              >
+                <SelectTrigger id="payment-status" className="col-span-3">
+                  <SelectValue placeholder="Select payment status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Paid">Paid</SelectItem>
+                  <SelectItem value="Unpaid">Unpaid</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => !isLoading && setShowUpdateModal(false)} 
+            <Button
+              variant="outline"
+              onClick={() => setShowUpdateModal(false)}
               disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button onClick={onUpdate} disabled={isLoading}>
+            <Button onClick={onUpdateStatus} disabled={isLoading}>
               {isLoading ? "Updating..." : "Update Status"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
+      {/* View Order Details Modal */}
+      <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+      <DialogContent className="max-w-3xl bg-white dark:bg-slate-900">
+  <DialogHeader>
+    <DialogTitle>Order Details</DialogTitle>
+    <DialogDescription>
+      Order #{data.id.substring(0, 8)}
+    </DialogDescription>
+  </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Customer Information
+                </h3>
+                <div className="mt-2 space-y-2">
+                  <p>
+                    <span className="font-medium">Name:</span>{" "}
+                    {data.customerName}
+                  </p>
+                  <p>
+                    <span className="font-medium">Phone:</span> {data.phone}
+                  </p>
+                  <p>
+                    <span className="font-medium">Address:</span> {data.address}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Order Information
+                </h3>
+                <div className="mt-2 space-y-2">
+                  <p>
+                    <span className="font-medium">Date:</span> {data.createdAt}
+                  </p>
+                  <p>
+                    <span className="font-medium">Total:</span>{" "}
+                    {data.totalPrice}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Payment Status:</span>
+                    <Badge variant={data.isPaid ? "secondary" : "destructive"}>
+                      {data.isPaid ? "Paid" : "Unpaid"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Order Status:</span>
+                    <Badge
+                      variant={
+                        data.order_status.toLowerCase() === "completed"
+                          ? "secondary"
+                          : data.order_status.toLowerCase() === "processing"
+                          ? "secondary"
+                          : data.order_status.toLowerCase() === "cancelled"
+                          ? "destructive"
+                          : "outline"
+                      }
+                    >
+                      {data.order_status}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Products
+              </h3>
+              <div className="mt-2">
+                <p>{data.products}</p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowViewModal(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setShowViewModal(false);
+                setShowUpdateModal(true);
+              }}
+            >
+              Update Status
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="h-8 w-8 p-0 focus-visible:ring-2 focus-visible:ring-offset-2"
           >
             <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
+            <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        
-        <DropdownMenuContent align="end" className="w-[200px]">
-          <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
-          
-          <DropdownMenuItem 
+
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+          <DropdownMenuItem
+            onClick={() => setShowViewModal(true)}
+            className="flex items-center cursor-pointer"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            View Details
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onClick={() => setShowUpdateModal(true)}
+            className="flex items-center cursor-pointer"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Update Status
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
             onClick={() => onCopy(data.id)}
             className="flex items-center cursor-pointer"
           >
             <Copy className="h-4 w-4 mr-2" />
-            Copy Order ID
+            Copy ID
           </DropdownMenuItem>
-          
-          <DropdownMenuItem 
-            onClick={() => !isLoading && setShowUpdateModal(true)}
-            className="flex items-center cursor-pointer"
-          >
-            <Truck className="h-4 w-4 mr-2" />
-            Update Status
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem 
-            onClick={printOrder}
-            className="flex items-center cursor-pointer"
-          >
-            <Printer className="h-4 w-4 mr-2" />
-            Print Order
-          </DropdownMenuItem>
-          
+
           <DropdownMenuSeparator />
-          
+
           <DropdownMenuItem
-            onClick={() => !isLoading && setShowDeleteModal(true)}
-            className="flex items-center cursor-pointer text-red-600 focus:text-red-600"
+            onClick={() => setShowDeleteModal(true)}
+            className="flex items-center cursor-pointer text-destructive focus:text-destructive"
           >
-            <X className="h-4 w-4 mr-2" />
+            <Trash className="h-4 w-4 mr-2" />
             Delete Order
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -1,25 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import { Copy, Edit, MoreVertical, Trash, Archive, Star, Eye, BarChart } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+
+import { Button } from "@/components/ui/button";
 import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Copy, Edit, MoreVertical, Trash } from "lucide-react";
 import { AlertModal } from "@/components/Modal/alert-modal";
+import { ProductColumn } from "./columns";
 import { deleteObject, ref } from "firebase/storage";
-import { storage } from "@/lib/firebase";
-import axios from "axios";
-import toast from "react-hot-toast";
-import { ProductColumns } from "./columns";
+import { db, storage } from "@/lib/firebase";
+import { deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CellActionProps {
-  data: ProductColumns;
+  data: ProductColumn;
 }
 
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
@@ -42,25 +45,55 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     try {
       setIsLoading(true);
       
-      // Try to delete the image from storage, but don't let it block the billboard deletion if it fails
-      try {
-        const nameRef = ref(storage, data.name);
-        await deleteObject(nameRef);
-      } catch (error) {
-        console.log("[IMAGE_DELETE_ERROR]", error);
-        // Continue with billboard deletion even if image deletion fails
-      }
+      // Delete product from Firestore
+      await deleteDoc(doc(db, "stores", params.storeId as string, "products", data.id));
       
-      // Delete billboard from API
-      await axios.delete(`/api/${params.storeId}/products/${data.id}`);
-      
-      toast.success("product deleted successfully");
-      location.reload();
+      toast.success("Product deleted successfully");
+      router.refresh();
     } catch (error) {
+      console.error("Error deleting product:", error);
       toast.error("Failed to delete product. Please try again.");
     } finally {
       setIsLoading(false);
       setShowDeleteModal(false);
+    }
+  };
+
+  const onToggleArchive = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Toggle archive status
+      await updateDoc(doc(db, "stores", params.storeId as string, "products", data.id), {
+        isArchived: !data.isArchived
+      });
+      
+      toast.success(data.isArchived ? "Product restored" : "Product archived");
+      router.refresh();
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast.error("Failed to update product. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onToggleFeatured = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Toggle featured status
+      await updateDoc(doc(db, "stores", params.storeId as string, "products", data.id), {
+        isFeatured: !data.isFeatured
+      });
+      
+      toast.success(data.isFeatured ? "Product unfeatured" : "Product featured");
+      router.refresh();
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast.error("Failed to update product. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,45 +106,75 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         loading={isLoading}
       />
       
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
-            className="h-8 w-8 p-0 focus-visible:ring-2 focus-visible:ring-offset-2"
-          >
-            <span className="sr-only">Open menu</span>
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+      <TooltipProvider>
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="h-8 w-8 p-0 focus-visible:ring-2 focus-visible:ring-offset-2"
+                  disabled={isLoading}
+                >
+                  <span className="sr-only">Open menu</span>
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Actions</p>
+            </TooltipContent>
+          </Tooltip>
           
-          <DropdownMenuItem 
-            onClick={() => onCopy(data.id)}
-            className="flex items-center cursor-pointer"
-          >
-            <Copy className="h-4 w-4 mr-2" />
-            Copy Id
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem 
-            onClick={() => router.push(`/${params.storeId}/products/${data.id}`)}
-            className="flex items-center cursor-pointer"
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Update
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem
-            onClick={() => setShowDeleteModal(true)}
-            className="flex items-center cursor-pointer text-red-600 focus:text-red-600"
-          >
-            <Trash className="h-4 w-4 mr-2" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            
+            <DropdownMenuItem 
+              onClick={() => router.push(`/${params.storeId}/products/${data.id}`)}
+              className="flex items-center cursor-pointer"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Product
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem 
+              onClick={() => onToggleFeatured()}
+              className="flex items-center cursor-pointer"
+            >
+              <Star className="h-4 w-4 mr-2" />
+              {data.isFeatured ? "Unmark as Featured" : "Mark as Featured"}
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem 
+              onClick={() => onToggleArchive()}
+              className="flex items-center cursor-pointer"
+            >
+              <Archive className="h-4 w-4 mr-2" />
+              {data.isArchived ? "Restore Product" : "Archive Product"}
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem 
+              onClick={() => onCopy(data.id)}
+              className="flex items-center cursor-pointer"
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copy ID
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem 
+              onClick={() => setShowDeleteModal(true)}
+              className="flex items-center cursor-pointer text-destructive focus:text-destructive"
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Delete Product
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TooltipProvider>
     </>
   );
 };

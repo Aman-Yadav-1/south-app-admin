@@ -17,7 +17,7 @@ import { FiDownload } from "react-icons/fi";
 import { InvoicePDF, formatCurrency } from "./pdfGenerator";
 import { toast } from "react-hot-toast";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, getDocs, doc, query, orderBy } from "firebase/firestore";
 import { useParams } from "next/navigation";
 
 const generateInvoiceNumber = () => {
@@ -30,6 +30,13 @@ interface InvoiceItem {
   price: string;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category?: string;
+}
+
 const InvoicePage = () => {
   const params = useParams();
   const storeId = params.storeId as string;
@@ -38,16 +45,48 @@ const InvoicePage = () => {
   const [paymentMode, setPaymentMode] = useState("Online");
   const [customerName, setCustomerName] = useState("");
   const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setInvoiceNumber(generateInvoiceNumber());
+    fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const productsQuery = query(
+        collection(doc(db, "stores", storeId), "products"),
+        orderBy("name")
+      );
+      
+      const productsSnapshot = await getDocs(productsQuery);
+      const productsList: Product[] = [];
+      
+      productsSnapshot.forEach((doc) => {
+        const data = doc.data();
+        productsList.push({
+          id: doc.id,
+          name: data.name,
+          price: data.price || 0,
+          category: data.category
+        });
+      });
+      
+      setProducts(productsList);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      toast.error("Failed to load products");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const addItem = () => {
     setItems([...items, { name: "", qty: 1, price: "" }]);
   };
 
-  // Update the updateItem function to properly validate numbers
   const updateItem = (index: number, field: keyof InvoiceItem, value: any) => {
     const updatedItems = [...items];
 
@@ -190,19 +229,43 @@ const InvoicePage = () => {
             <div className="space-y-4">
               {items.map((item, index) => (
                 <div key={index} className="flex items-center space-x-4">
-                  <Input
-                    placeholder="Item Name"
-                    value={item.name}
-                    onChange={(e) => updateItem(index, "name", e.target.value)}
-                    className="w-1/3"
-                  />
+                  <Select 
+                    value={item.name || ""} 
+                    onValueChange={(value) => {
+                      const product = products.find(p => p.name === value);
+                      if (product) {
+                        const updatedItems = [...items];
+                        updatedItems[index] = {
+                          name: product.name,
+                          qty: 1,
+                          price: product.price.toString()
+                        };
+                        setItems(updatedItems);
+                      } else {
+                        updateItem(index, "name", value);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-1/3">
+                      <SelectValue placeholder="Select product" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {products.map((product) => (
+                        <SelectItem key={product.id} value={product.name}>
+                          {product.name} - {formatCurrency(product.price)}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="custom">Custom Item</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
                   <Input
                     type="number"
                     placeholder="Quantity"
                     value={item.qty}
                     min="1"
                     onChange={(e) => updateItem(index, "qty", e.target.value)}
-                    className="w-1/4"
+                    className="w-1/6"
                   />
                   <Input
                     type="text"
@@ -221,8 +284,11 @@ const InvoicePage = () => {
                         }
                       }
                     }}
-                    className="w-1/4"
+                    className="w-1/6"
                   />
+                  <div className="w-1/6 text-right font-medium">
+                    {formatCurrency(item.qty * parseFloat(item.price || "0"))}
+                  </div>
                   <Button
                     variant="destructive"
                     onClick={() =>

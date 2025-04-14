@@ -55,16 +55,22 @@ export interface Product{
     id: string,
     name: string,
     price: number,
+    description?: string,
     qty?: number,
     images: {url: string}[],
     isFeatured: boolean,
     isArchived: boolean,
     category: string,
     size: string,
-    kitchen: string,
-    cuisine: string,
+    kitchen?: string,
+    cuisine?: string,
+    tags?: string[],
+    nutritionalInfo?: string,
+    ingredients?: string,
+    preparationTime?: number,
     createdAt?: Timestamp;
     updatedAt?: Timestamp;
+    storeId?: string;
 }
 
 export interface Order{
