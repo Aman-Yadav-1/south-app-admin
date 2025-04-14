@@ -9,7 +9,6 @@ import { db } from '@/lib/firebase'
 import { Store } from '@/types-db'
 
 const Navbar = async () => {
-
     const {userId} = auth()
 
     if(!userId){
@@ -26,23 +25,22 @@ const Navbar = async () => {
         stores.push(doc.data() as Store)
     })
 
+    return (
+        <div className='border-b sticky top-0 z-50 bg-white dark:bg-gray-950 shadow-md'>
+            <div className="flex h-16 items-center px-4 sm:px-6 xl:px-8 justify-between">
+                {/* Left side: Store switcher and navigation */}
+                <div className="flex items-center gap-x-4">
+                    <StoreSwitcher items={stores} />
+                    <MainNav className="ml-0 sm:ml-2" />
+                </div>
 
-  return (
-    <div className='border-b'>
-        <div className="flex h-16 items-center px-4">
-            <StoreSwitcher  items={stores} />
-
-
-            {/*routes */}
-            <MainNav/>
-
-            {/*user profile */}
-            <div className="ml-auto">
-                <UserButton afterSignOutUrl="/"/>
+                {/* Right side: User profile */}
+                <div className="flex items-center">
+                    <UserButton afterSignOutUrl="/" />
+                </div>
             </div>
         </div>
-    </div>
-  )
+    )
 }
 
 export default Navbar

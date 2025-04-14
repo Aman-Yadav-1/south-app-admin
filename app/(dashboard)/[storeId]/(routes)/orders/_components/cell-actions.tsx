@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Check, Copy, Edit, MoreHorizontal, Printer, Truck, X } from "lucide-react";
+import { Copy, MoreHorizontal, Printer, Truck, X } from "lucide-react";
 import { AlertModal } from "@/components/Modal/alert-modal";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -46,18 +46,24 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     try {
       setIsLoading(true);
       
-      // Delete order from API
+      // First close the modal to prevent UI issues
+      setShowDeleteModal(false);
+      
+      // Then delete the order
       await axios.delete(`/api/${params.storeId}/orders/${data.id}`);
       
+      // Show success message
       toast.success("Order deleted successfully");
-      router.push(`/${params.storeId}/orders`);
-      router.refresh();
+      
+      // Use a timeout to ensure the UI has time to update before refreshing
+      setTimeout(() => {
+        router.refresh();
+      }, 300);
+      
     } catch (error) {
       toast.error("Failed to delete order. Please try again.");
       console.error("[ORDER_DELETE_ERROR]", error);
-    } finally {
       setIsLoading(false);
-      setShowDeleteModal(false);
     }
   };
 
@@ -65,23 +71,30 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     try {
       setIsLoading(true);
       
+      // First close the modal to prevent UI issues
+      setShowUpdateModal(false);
+      
+      // Then update the order
       await axios.patch(`/api/${params.storeId}/orders/${data.id}`, {
         order_status: orderStatus
       });
       
+      // Show success message
       toast.success("Order status updated successfully");
-      router.refresh();
+      
+      // Use a timeout to ensure the UI has time to update before refreshing
+      setTimeout(() => {
+        router.refresh();
+      }, 300);
+      
     } catch (error) {
       toast.error("Failed to update order. Please try again.");
       console.error("[ORDER_UPDATE_ERROR]", error);
-    } finally {
       setIsLoading(false);
-      setShowUpdateModal(false);
     }
   };
 
   const printOrder = () => {
-    // Implement print functionality
     toast.success("Print functionality would be implemented here");
   };
 
@@ -95,8 +108,10 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         description="Are you sure you want to delete this order? This action cannot be undone."
       />
       
-      <Dialog open={showUpdateModal} onOpenChange={setShowUpdateModal}>
-        <DialogContent>
+      <Dialog open={showUpdateModal} onOpenChange={(open) => {
+        if (!isLoading) setShowUpdateModal(open);
+      }}>
+        <DialogContent className="bg-white">
           <DialogHeader>
             <DialogTitle>Update Order Status</DialogTitle>
             <DialogDescription>
@@ -104,7 +119,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 bg-white">
             <div className="grid gap-2">
               <Label htmlFor="status">Order Status</Label>
               <Select
@@ -126,7 +141,11 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowUpdateModal(false)} disabled={isLoading}>
+            <Button 
+              variant="outline" 
+              onClick={() => !isLoading && setShowUpdateModal(false)} 
+              disabled={isLoading}
+            >
               Cancel
             </Button>
             <Button onClick={onUpdate} disabled={isLoading}>
@@ -159,7 +178,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
           </DropdownMenuItem>
           
           <DropdownMenuItem 
-            onClick={() => setShowUpdateModal(true)}
+            onClick={() => !isLoading && setShowUpdateModal(true)}
             className="flex items-center cursor-pointer"
           >
             <Truck className="h-4 w-4 mr-2" />
@@ -177,7 +196,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
           <DropdownMenuSeparator />
           
           <DropdownMenuItem
-            onClick={() => setShowDeleteModal(true)}
+            onClick={() => !isLoading && setShowDeleteModal(true)}
             className="flex items-center cursor-pointer text-red-600 focus:text-red-600"
           >
             <X className="h-4 w-4 mr-2" />
