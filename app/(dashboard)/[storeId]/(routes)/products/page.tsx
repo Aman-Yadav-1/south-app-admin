@@ -10,10 +10,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Loading component for better UX
 const ProductsLoading = () => (
   <div className="flex-col">
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-10 w-40" />
-        <Skeleton className="h-10 w-24" />
+    <div className="flex-1 space-y-4 p-4 sm:p-6 md:p-8 pt-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <Skeleton className="h-10 w-full sm:w-40" />
+        <Skeleton className="h-10 w-full sm:w-24" />
       </div>
       <Skeleton className="h-[450px] w-full mt-6" />
     </div>
@@ -92,7 +92,7 @@ const ProductsPage = async ({ params }: { params: { storeId: string } }) => {
 
     return (
       <div className="flex-col">
-        <div className="flex-1 space-y-4 p-8 pt-6">
+        <div className="flex-1 space-y-4 p-4 sm:p-6 md:p-8 pt-6">
           <ProductClient 
             data={formattedProducts} 
             totalProducts={totalProducts}
@@ -104,7 +104,7 @@ const ProductsPage = async ({ params }: { params: { storeId: string } }) => {
     console.error("Error loading products:", error);
     return (
       <div className="flex-col">
-        <div className="flex-1 space-y-4 p-8 pt-6">
+        <div className="flex-1 space-y-4 p-4 sm:p-6 md:p-8 pt-6">
           <div className="bg-destructive/15 p-4 rounded-md">
             <p className="text-destructive font-medium">Error loading products. Please try again.</p>
           </div>

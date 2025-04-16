@@ -63,17 +63,19 @@ export const ProductClient: React.FC<ProductClientProps> = ({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <Heading
           title={`Products (${totalProducts})`}
           description="Manage products for your store"
         />
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Filter className="mr-2 h-4 w-4" />
-                Filter
+              <Button variant="outline" size="sm" className="w-full xs:w-auto justify-between">
+                <div className="flex items-center">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filter
+                </div>
                 {activeFilter && <Badge variant="outline" className="ml-2">{activeFilter}</Badge>}
               </Button>
             </DropdownMenuTrigger>
@@ -96,16 +98,19 @@ export const ProductClient: React.FC<ProductClientProps> = ({
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button onClick={() => router.push(`/${params.storeId}/products/new`)}>
+          <Button 
+            onClick={() => router.push(`/${params.storeId}/products/new`)}
+            className="w-full xs:w-auto"
+          >
             <Plus className="mr-2 h-4 w-4" />
             Add New
           </Button>
         </div>
       </div>
-      <Separator />
+      <Separator className="my-4" />
       
       {/* Stats Cards */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
@@ -132,7 +137,7 @@ export const ProductClient: React.FC<ProductClientProps> = ({
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="sm:col-span-2 lg:col-span-1">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
               Archived Products
@@ -147,15 +152,20 @@ export const ProductClient: React.FC<ProductClientProps> = ({
         </Card>
       </div>
       
-      <DataTable 
-        searchKey="name" 
-        columns={columns} 
-        data={filteredData} 
-      />
+      {/* Data Table */}
+      <div className="rounded-md border overflow-hidden">
+        <DataTable 
+          searchKey="name" 
+          columns={columns} 
+          data={filteredData} 
+        />
+      </div>
       
-      <Heading title="API" description="API calls for Products" />
-      <Separator />
-      <ApiList entityName="products" entityNameId="productId" />
+      <div className="mt-8">
+        <Heading title="API" description="API calls for Products" />
+        <Separator className="my-4" />
+        <ApiList entityName="products" entityNameId="productId" />
+      </div>
     </>
   );
 };

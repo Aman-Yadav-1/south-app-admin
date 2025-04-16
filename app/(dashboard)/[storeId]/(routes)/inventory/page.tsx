@@ -265,37 +265,38 @@ const InventoryPage = () => {
     }, 300);
   };
   return (
-    <div className="max-w-8xl mx-auto p-4 sm:p-6 lg:p-8">
-      <div className="flex items-center justify-between">
+    <div className="max-w-8xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <Heading
           title="Inventory Management"
           description="Manage your store's inventory items"
         />
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex gap-2">
           <Button
             variant="outline"
             onClick={() => setIsFilterDialogOpen(true)}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-1 sm:gap-2"
           >
             <Filter className="h-4 w-4" />
-            Filter
+            <span className="hidden xs:inline">Filter</span>
           </Button>
           <Button
             variant="outline"
             onClick={handleExport}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-1 sm:gap-2"
           >
             <FileDown className="h-4 w-4" />
-            Export
+            <span className="hidden xs:inline">Export</span>
           </Button>
           <div className="relative">
             <Button
               variant="outline"
               onClick={handleFileImport}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full"
             >
               <FileUp className="h-4 w-4" />
-              Import
+              <span className="hidden xs:inline">Import</span>
             </Button>
             <input
               type="file"
@@ -308,17 +309,17 @@ const InventoryPage = () => {
           <Button
             variant="outline"
             onClick={() => setIsSupplierDialogOpen(true)}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-1 sm:gap-2"
           >
             <Truck className="h-4 w-4" />
-            Suppliers
+            <span className="hidden xs:inline">Suppliers</span>
           </Button>
           <Button
             onClick={() => setIsAddDialogOpen(true)}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-1 sm:gap-2 col-span-2 sm:col-span-1 mt-2 sm:mt-0"
           >
             <Plus className="h-4 w-4" />
-            Add Item
+            <span>Add Item</span>
           </Button>
         </div>
       </div>
@@ -329,26 +330,30 @@ const InventoryPage = () => {
       <InventoryStatsCards stats={stats} loading={loading} />
 
       {/* Active Filters */}
-      <ActiveFilters filterData={filterData} onResetFilters={resetFilters} />
+      <div className="my-4">
+        <ActiveFilters filterData={filterData} onResetFilters={resetFilters} />
+      </div>
 
       {/* Data Table */}
-      <InventoryDataTable
-        data={filteredItems}
-        loading={loading}
-        onEdit={(item) => {
-          setCurrentItem(item);
-          setIsEditDialogOpen(true);
-        }}
-        onDelete={handleDeleteClick} // Use the handler function
-        onAdjustStock={(item) => {
-          setCurrentItem(item);
-          setIsAdjustDialogOpen(true);
-        }}
-        onViewHistory={(item) => {
-          setCurrentItem(item);
-          setIsHistoryDialogOpen(true);
-        }}
-      />
+      <div className="rounded-md border overflow-hidden">
+        <InventoryDataTable
+          data={filteredItems}
+          loading={loading}
+          onEdit={(item) => {
+            setCurrentItem(item);
+            setIsEditDialogOpen(true);
+          }}
+          onDelete={handleDeleteClick}
+          onAdjustStock={(item) => {
+            setCurrentItem(item);
+            setIsAdjustDialogOpen(true);
+          }}
+          onViewHistory={(item) => {
+            setCurrentItem(item);
+            setIsHistoryDialogOpen(true);
+          }}
+        />
+      </div>
 
       {/* Dialogs */}
       <AddItemDialog

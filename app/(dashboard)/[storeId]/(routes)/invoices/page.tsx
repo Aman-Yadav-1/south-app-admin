@@ -28,6 +28,7 @@ interface InvoiceItem {
   name: string;
   qty: number;
   price: string;
+  isCustom?: boolean;
 }
 
 interface Product {
@@ -84,7 +85,7 @@ const InvoicePage = () => {
   };
 
   const addItem = () => {
-    setItems([...items, { name: "", qty: 1, price: "" }]);
+    setItems([...items, { name: "", qty: 1, price: "", isCustom: false }]);
   };
 
   const updateItem = (index: number, field: keyof InvoiceItem, value: any) => {
@@ -166,7 +167,7 @@ const InvoicePage = () => {
         customerName,
         invoiceNumber,
         paymentMode,
-        items,
+        items: items.map(({ isCustom, ...rest }) => rest), // Remove isCustom flag before saving
         total: calculateTotal(),
         createdAt: serverTimestamp(),
       });
@@ -184,7 +185,7 @@ const InvoicePage = () => {
   };
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6">
       <Heading
         title="Invoice"
         description="Create and manage invoices with ease."
@@ -198,25 +199,25 @@ const InvoicePage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <Input
                 placeholder="Customer Name"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-1/2"
+                className="w-full sm:w-1/2"
               />
               <Input
                 placeholder="Invoice Number"
                 value={invoiceNumber}
                 readOnly
-                className="w-1/2 bg-gray-100"
+                className="w-full sm:w-1/2 bg-gray-100"
               />
             </div>
 
-            <div className="flex items-center space-x-4">
-              <label className="text-sm font-medium">Payment Mode:</label>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <label className="text-sm font-medium min-w-[120px]">Payment Mode:</label>
               <Select value={paymentMode} onValueChange={setPaymentMode}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue placeholder="Select Payment Mode" />
                 </SelectTrigger>
                 <SelectContent>
@@ -228,80 +229,106 @@ const InvoicePage = () => {
 
             <div className="space-y-4">
               {items.map((item, index) => (
-                <div key={index} className="flex items-center space-x-4">
-                  <Select 
-                    value={item.name || ""} 
-                    onValueChange={(value) => {
-                      const product = products.find(p => p.name === value);
-                      if (product) {
-                        const updatedItems = [...items];
-                        updatedItems[index] = {
-                          name: product.name,
-                          qty: 1,
-                          price: product.price.toString()
-                        };
-                        setItems(updatedItems);
-                      } else {
-                        updateItem(index, "name", value);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-1/3">
-                      <SelectValue placeholder="Select product" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem key={product.id} value={product.name}>
-                          {product.name} - {formatCurrency(product.price)}
-                        </SelectItem>
-                      ))}
-                      <SelectItem value="custom">Custom Item</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Input
-                    type="number"
-                    placeholder="Quantity"
-                    value={item.qty}
-                    min="1"
-                    onChange={(e) => updateItem(index, "qty", e.target.value)}
-                    className="w-1/6"
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Price"
-                    value={item.price}
-                    onChange={(e) => updateItem(index, "price", e.target.value)}
-                    onBlur={() => {
-                      // Format price on blur to ensure it's a valid number
-                      const updatedItems = [...items];
-                      const price = updatedItems[index].price;
-                      if (price) {
-                        const numPrice = parseFloat(price);
-                        if (!isNaN(numPrice)) {
-                          updatedItems[index].price = numPrice.toString();
+                <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  {item.isCustom ? (
+                    <Input
+                      placeholder="Custom Item Name"
+                      value={item.name}
+                      onChange={(e) => updateItem(index, "name", e.target.value)}
+                      className="w-full sm:w-1/3"
+                    />
+                  ) : (
+                    <Select 
+                      value={item.name || ""} 
+                      onValueChange={(value) => {
+                        if (value === "custom") {
+                          // Set as custom item
+                          const updatedItems = [...items];
+                          updatedItems[index] = {
+                            name: "",
+                            qty: 1,
+                            price: "",
+                            isCustom: true
+                          };
                           setItems(updatedItems);
+                        } else {
+                          const product = products.find(p => p.name === value);
+                          if (product) {
+                            const updatedItems = [...items];
+                            updatedItems[index] = {
+                              name: product.name,
+                              qty: 1,
+                              price: product.price.toString(),
+                              isCustom: false
+                            };
+                            setItems(updatedItems);
+                          } else {
+                            updateItem(index, "name", value);
+                          }
                         }
-                      }
-                    }}
-                    className="w-1/6"
-                  />
-                  <div className="w-1/6 text-right font-medium">
-                    {formatCurrency(item.qty * parseFloat(item.price || "0"))}
+                      }}
+                    >
+                      <SelectTrigger className="w-full sm:w-1/3">
+                        <SelectValue placeholder="Select product" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {products.map((product) => (
+                          <SelectItem key={product.id} value={product.name}>
+                            {product.name} - {formatCurrency(product.price)}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="custom">Custom Item</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  
+                  <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
+                    <Input
+                      type="number"
+                      placeholder="Quantity"
+                      value={item.qty}
+                      min="1"
+                      onChange={(e) => updateItem(index, "qty", e.target.value)}
+                      className="w-full sm:w-[80px]"
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Price"
+                      value={item.price}
+                      onChange={(e) => updateItem(index, "price", e.target.value)}
+                      onBlur={() => {
+                        // Format price on blur to ensure it's a valid number
+                        const updatedItems = [...items];
+                        const price = updatedItems[index].price;
+                        if (price) {
+                          const numPrice = parseFloat(price);
+                          if (!isNaN(numPrice)) {
+                            updatedItems[index].price = numPrice.toString();
+                            setItems(updatedItems);
+                          }
+                        }
+                      }}
+                      className="w-full sm:w-[100px]"
+                    />
                   </div>
-                  <Button
-                    variant="destructive"
-                    onClick={() =>
-                      setItems(items.filter((_, i) => i !== index))
-                    }
-                  >
-                    Remove
-                  </Button>
+                  
+                  <div className="flex items-center justify-between w-full sm:w-auto sm:ml-auto gap-3">
+                    <div className="font-medium text-sm">
+                      {formatCurrency(item.qty * parseFloat(item.price || "0"))}
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setItems(items.filter((_, i) => i !== index))}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <Button variant="outline" onClick={addItem}>
+            <Button variant="outline" onClick={addItem} className="w-full sm:w-auto">
               Add Item
             </Button>
 
@@ -315,11 +342,11 @@ const InvoicePage = () => {
         </CardContent>
       </Card>
 
-      <div className="flex items-center space-x-4">
-        <div className="inline-flex items-center overflow-hidden rounded-md border">
+      <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-4">
+        <div className="inline-flex items-center overflow-hidden rounded-md border w-full xs:w-auto">
           <Button
             onClick={handleSaveInvoice}
-            className="px-4 h-10 rounded-none"
+            className="px-4 h-10 rounded-none flex-1 xs:flex-auto"
             variant="default"
           >
             Save Invoice

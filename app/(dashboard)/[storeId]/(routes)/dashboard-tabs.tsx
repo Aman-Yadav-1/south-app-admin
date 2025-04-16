@@ -85,26 +85,27 @@ export const DashboardTabs = ({
 
   return (
     <Tabs defaultValue="overview" className="space-y-4">
-      <TabsList className="grid w-full grid-cols-3 h-10 bg-muted/20 p-1 rounded-lg">
-        <TabsTrigger
-          value="overview"
-          className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-800"
-        >
-          Overview
-        </TabsTrigger>
-        <TabsTrigger
-          value="sales"
-          className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-800"
-        >
-          Sales Analytics
-        </TabsTrigger>
-        <TabsTrigger
-          value="inventory"
-          className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-800"
-        >
-          Inventory
-        </TabsTrigger>
-      </TabsList>
+      <TabsList className="flex flex-wrap w-full bg-muted/20 p-1 rounded-lg">
+  <TabsTrigger
+    value="overview"
+    className="flex-1 min-w-[80px] text-xs sm:text-sm rounded-md py-2 px-1 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-800"
+  >
+    Overview
+  </TabsTrigger>
+  <TabsTrigger
+    value="sales"
+    className="flex-1 min-w-[80px] text-xs sm:text-sm rounded-md py-2 px-1 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-800"
+  >
+    Sales
+  </TabsTrigger>
+  <TabsTrigger
+    value="inventory"
+    className="flex-1 min-w-[80px] text-xs sm:text-sm rounded-md py-2 px-1 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-800"
+  >
+    Inventory
+  </TabsTrigger>
+</TabsList>
+
 
       <TabsContent value="overview" className="space-y-6">
         {/* Monthly Revenue Chart */}
@@ -121,7 +122,7 @@ export const DashboardTabs = ({
             </div>
           </CardHeader>
           <CardContent className="pt-4">
-            <div className="h-[300px]">
+            <div className="h-[250px] sm:h-[300px]">
               <OverviewClient data={validMonthlyGraphRevenue} />
             </div>
           </CardContent>
@@ -139,13 +140,13 @@ export const DashboardTabs = ({
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </div>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 overflow-x-auto">
               {recentOrdersData.length > 0 ? (
                 <div className="space-y-4">
                   {recentOrdersData.map((order, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors gap-2"
                     >
                       <div className="space-y-1">
                         <p className="text-sm font-medium leading-none">
@@ -158,7 +159,7 @@ export const DashboardTabs = ({
                             : "N/A"}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 self-end sm:self-auto">
                         <div
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             order.isPaid
@@ -203,17 +204,17 @@ export const DashboardTabs = ({
                 <Package className="h-4 w-4 text-muted-foreground" />
               </div>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 overflow-x-auto">
               {topSellingProducts.length > 0 ? (
                 <div className="space-y-4">
                   {topSellingProducts.map((product, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors gap-2"
                     >
                       <div className="flex items-center gap-3">
                         {product.images && product.images[0] && (
-                          <div className="relative w-10 h-10 overflow-hidden rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
+                          <div className="relative w-10 h-10 overflow-hidden rounded-md border border-gray-200 dark:border-gray-700 shadow-sm shrink-0">
                             <img
                               src={product.images[0].url}
                               alt={product.name}
@@ -221,8 +222,8 @@ export const DashboardTabs = ({
                             />
                           </div>
                         )}
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium leading-none">
+                        <div className="space-y-1 min-w-0">
+                          <p className="text-sm font-medium leading-none truncate max-w-[200px]">
                             {product.name}
                           </p>
                           <p className="text-xs text-muted-foreground">
@@ -230,7 +231,7 @@ export const DashboardTabs = ({
                           </p>
                         </div>
                       </div>
-                      <div className="font-medium text-sm">
+                      <div className="font-medium text-sm self-end sm:self-auto">
                         {formatter.format(product.price || 0)}
                       </div>
                     </div>
@@ -246,7 +247,7 @@ export const DashboardTabs = ({
         </div>
 
         {/* Revenue Breakdown */}
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card className="shadow-md border border-gray-100 dark:border-gray-800 overflow-hidden">
             <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
               <div className="flex items-center justify-between">
@@ -260,26 +261,26 @@ export const DashboardTabs = ({
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 overflow-x-auto">
               <div className="space-y-4">
                 {validRevenueByCategory.map((category, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div
-                        className="w-3 h-3 rounded-full shadow-sm"
+                        className="w-3 h-3 rounded-full shadow-sm shrink-0"
                         style={{
                           backgroundColor:
                             index % 2 === 0 ? "#0088FE" : "#00C49F",
                         }}
                       />
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-medium truncate">
                         {category.name}
                       </span>
                     </div>
-                    <span className="text-sm font-semibold">
+                    <span className="text-sm font-semibold ml-2 shrink-0">
                       {formatter.format(category.total)}
                     </span>
                   </div>
@@ -298,24 +299,26 @@ export const DashboardTabs = ({
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 overflow-x-auto">
               <div className="space-y-4">
                 {validRevenueByOrderStatus.map((status, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div
-                        className="w-3 h-3 rounded-full shadow-sm"
+                        className="w-3 h-3 rounded-full shadow-sm shrink-0"
                         style={{
                           backgroundColor:
                             index % 2 === 0 ? "#FFBB28" : "#FF8042",
                         }}
                       />
-                      <span className="text-sm font-medium">{status.name}</span>
+                      <span className="text-sm font-medium truncate">
+                        {status.name}
+                      </span>
                     </div>
-                    <span className="text-sm font-semibold">
+                    <span className="text-sm font-semibold ml-2 shrink-0">
                       {formatter.format(status.total)}
                     </span>
                   </div>
@@ -324,7 +327,7 @@ export const DashboardTabs = ({
             </CardContent>
           </Card>
 
-          <Card className="shadow-md border border-gray-100 dark:border-gray-800 overflow-hidden">
+          <Card className="shadow-md border border-gray-100 dark:border-gray-800 overflow-hidden md:col-span-2 lg:col-span-1">
             <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
               <div className="flex items-center justify-between">
                 <div>
@@ -334,25 +337,25 @@ export const DashboardTabs = ({
                   <CardDescription>Sales by payment status</CardDescription>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="pt-4">
+              </CardHeader>
+            <CardContent className="pt-4 overflow-x-auto">
               <div className="space-y-4">
                 {validOrderPaymentStatusRevenue.map((status, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div
-                        className="w-3 h-3 rounded-full shadow-sm"
+                        className="w-3 h-3 rounded-full shadow-sm shrink-0"
                         style={{
                           backgroundColor:
                             index % 2 === 0 ? "#8884d8" : "#82ca9d",
                         }}
                       />
-                      <span className="text-sm font-medium">{status.name}</span>
+                      <span className="text-sm font-medium truncate">{status.name}</span>
                     </div>
-                    <span className="text-sm font-semibold">
+                    <span className="text-sm font-semibold ml-2 shrink-0">
                       {formatter.format(status.total)}
                     </span>
                   </div>
@@ -378,7 +381,7 @@ export const DashboardTabs = ({
                 <h3 className="text-sm font-medium mb-3">
                   Monthly Revenue Trend
                 </h3>
-                <div className="h-[300px] bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div className="h-[250px] sm:h-[300px] bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
                   <OverviewClient data={validMonthlyGraphRevenue} />
                 </div>
               </div>
@@ -397,19 +400,19 @@ export const DashboardTabs = ({
                         key={index}
                         className="flex items-center justify-between p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           <div
-                            className="w-3 h-3 rounded-full shadow-sm"
+                            className="w-3 h-3 rounded-full shadow-sm shrink-0"
                             style={{
                               backgroundColor:
                                 index % 2 === 0 ? "#0088FE" : "#00C49F",
                             }}
                           />
-                          <span className="text-sm font-medium">
+                          <span className="text-sm font-medium truncate">
                             {category.name}
                           </span>
                         </div>
-                        <span className="text-sm font-semibold">
+                        <span className="text-sm font-semibold ml-2 shrink-0">
                           {formatter.format(category.total)}
                         </span>
                       </div>
@@ -430,7 +433,7 @@ export const DashboardTabs = ({
                         return (
                           <div key={index} className="space-y-1">
                             <div className="flex justify-between text-xs">
-                              <span className="font-medium">
+                              <span className="font-medium truncate max-w-[150px]">
                                 {category.name}
                               </span>
                               <span className="font-semibold">
@@ -560,12 +563,12 @@ export const DashboardTabs = ({
           <CardContent className="pt-6">
             <div className="space-y-6">
               {/* Inventory Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-5 shadow-sm border border-blue-200 dark:border-blue-800">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-4 sm:p-5 shadow-sm border border-blue-200 dark:border-blue-800">
                   <h3 className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">
                     Total Items
                   </h3>
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                  <p className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-100">
                     {inventoryStats.totalItems}
                   </p>
                   <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
@@ -573,11 +576,11 @@ export const DashboardTabs = ({
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-xl p-5 shadow-sm border border-amber-200 dark:border-amber-800">
+                <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-xl p-4 sm:p-5 shadow-sm border border-amber-200 dark:border-amber-800">
                   <h3 className="text-sm font-medium text-amber-700 dark:text-amber-300 mb-1">
                     Low Stock
                   </h3>
-                  <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                  <p className="text-xl sm:text-2xl font-bold text-amber-900 dark:text-amber-100">
                     {inventoryStats.lowStock}
                   </p>
                   <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
@@ -585,11 +588,11 @@ export const DashboardTabs = ({
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-5 shadow-sm border border-green-200 dark:border-green-800">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-4 sm:p-5 shadow-sm border border-green-200 dark:border-green-800 sm:col-span-2 lg:col-span-1">
                   <h3 className="text-sm font-medium text-green-700 dark:text-green-300 mb-1">
                     Total Value
                   </h3>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                  <p className="text-xl sm:text-2xl font-bold text-green-900 dark:text-green-100">
                     {formatter.format(inventoryStats.totalValue)}
                   </p>
                   <p className="text-xs text-green-600 dark:text-green-400 mt-1">
@@ -604,31 +607,31 @@ export const DashboardTabs = ({
                 {inventoryItems.filter(
                   (item) => item.quantity <= (item.minQuantity || 5)
                 ).length > 0 ? (
-                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
+                      <thead className="bg-gray-50 dark:bg-gray-800">
                         <tr>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                            className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                           >
                             Item
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                            className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                           >
                             Current Qty
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                            className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                           >
                             Min Qty
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                            className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                           >
                             Status
                           </th>
@@ -643,18 +646,20 @@ export const DashboardTabs = ({
                           .map((item, index) => (
                             <tr
                               key={index}
-                              className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                              className="hover:bg-gray-50                               dark:hover:bg-gray-800 transition-colors"
                             >
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {item.name}
+                              <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                <div className="truncate max-w-[120px] sm:max-w-[200px]">
+                                  {item.name}
+                                </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {item.quantity}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {item.minQuantity || 5}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                                 <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
                                   Low Stock
                                 </span>
@@ -672,7 +677,7 @@ export const DashboardTabs = ({
               </div>
 
               {/* Inventory Value Distribution */}
-              <div className="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <h3 className="text-base font-medium mb-4">
                   Inventory Value Distribution
                 </h3>
@@ -701,7 +706,7 @@ export const DashboardTabs = ({
                               key={index}
                               className="flex items-center justify-between"
                             >
-                              <div className="flex-1">
+                              <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium truncate">
                                   {item.name}
                                 </p>
@@ -714,7 +719,7 @@ export const DashboardTabs = ({
                                   ></div>
                                 </div>
                               </div>
-                              <p className="text-sm font-semibold ml-4">
+                              <p className="text-sm font-semibold ml-4 shrink-0">
                                 {formatter.format(itemValue)}
                               </p>
                             </div>
@@ -755,7 +760,7 @@ export const DashboardTabs = ({
                               key={index}
                               className="flex items-center justify-between"
                             >
-                              <div className="flex-1">
+                              <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium truncate">
                                   {category}
                                 </p>
@@ -768,7 +773,7 @@ export const DashboardTabs = ({
                                   ></div>
                                 </div>
                               </div>
-                              <p className="text-sm font-semibold ml-4">
+                              <p className="text-sm font-semibold ml-4 shrink-0">
                                 {formatter.format(value as number)}
                               </p>
                             </div>

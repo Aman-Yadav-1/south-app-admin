@@ -14,7 +14,7 @@ const ProductPage = async ({ params }: {
   if (params.productId === "new") {
     return (
       <div className='flex-col'>
-        <div className='flex-1 space-y-4 p-8 pt-6'>
+        <div className='flex-1 space-y-4 p-4 sm:p-6 md:p-8 pt-6'>
           <ProductForm initialData={null} />
         </div>
       </div>
@@ -26,7 +26,7 @@ const ProductPage = async ({ params }: {
 
   return (
     <div className='flex-col'>
-      <div className='flex-1 space-y-4 p-8 pt-6'>
+      <div className='flex-1 space-y-4 p-4 sm:p-6 md:p-8 pt-6'>
         <ProductForm initialData={product} />
       </div>
     </div>

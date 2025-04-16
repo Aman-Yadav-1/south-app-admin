@@ -287,44 +287,53 @@ const PurchasePage = () => {
   };
 
   return (
-    <div className="max-w-8xl mx-auto p-4 sm:p-6 lg:p-8">
-      <div className="flex items-center justify-between">
+    <div className="max-w-8xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <Heading
           title="Purchase Management"
           description="Manage your purchase orders and supplier transactions"
         />
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsFilterDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filter
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setIsSupplierDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Users className="h-4 w-4" />
-            Suppliers
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            className="flex items-center gap-2"
-          >
-            <FileDown className="h-4 w-4" />
-            Export
-          </Button>
-          <Button
-            onClick={() => setIsCreateDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            New Purchase
-          </Button>
+        <div className="flex flex-wrap gap-2">
+          <div className="flex flex-1 sm:flex-none">
+            <Button
+              variant="outline"
+              onClick={() => setIsFilterDialogOpen(true)}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              <Filter className="h-4 w-4" />
+              <span className="hidden sm:inline">Filter</span>
+            </Button>
+          </div>
+          <div className="flex flex-1 sm:flex-none">
+            <Button
+              variant="outline"
+              onClick={() => setIsSupplierDialogOpen(true)}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Suppliers</span>
+            </Button>
+          </div>
+          <div className="flex flex-1 sm:flex-none">
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              <FileDown className="h-4 w-4" />
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+          </div>
+          <div className="flex flex-1 sm:flex-none">
+            <Button
+              onClick={() => setIsCreateDialogOpen(true)}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              <span>New Purchase</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -334,16 +343,20 @@ const PurchasePage = () => {
       <PurchaseStatsCards stats={stats} loading={loading} />
 
       {/* Active Filters */}
-      <ActiveFilters filterData={filterData} onResetFilters={resetFilters} />
+      <div className="my-4">
+        <ActiveFilters filterData={filterData} onResetFilters={resetFilters} />
+      </div>
 
       {/* Data Table */}
-      <PurchaseDataTable
-        data={filteredPurchases}
-        loading={loading}
-        onView={handleViewPurchase}
-        onEdit={handleEditPurchase}
-        onDelete={handleDeletePurchase}
-      />
+      <div className="rounded-md border overflow-hidden">
+        <PurchaseDataTable
+          data={filteredPurchases}
+          loading={loading}
+          onView={handleViewPurchase}
+          onEdit={handleEditPurchase}
+          onDelete={handleDeletePurchase}
+        />
+      </div>
 
       {/* Dialogs */}
       <CreatePurchaseDialog
