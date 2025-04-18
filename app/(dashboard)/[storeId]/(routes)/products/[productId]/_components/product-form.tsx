@@ -166,12 +166,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
   });
 
   // Initialize tags from form values
-  useEffect(() => {
-    const formTags = form.getValues("tags");
-    if (formTags) {
-      setTags(formTags);
-    }
-  }, [form]);
+useEffect(() => {
+  const formTags = form.getValues("tags");
+  if (formTags && JSON.stringify(formTags) !== JSON.stringify(tags)) {
+    setTags(formTags);
+  }
+}, [form, tags]);
 
   // Handle tag addition
   const addTag = () => {

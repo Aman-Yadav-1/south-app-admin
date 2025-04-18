@@ -73,32 +73,42 @@ export const EditPurchaseDialog: React.FC<EditPurchaseDialogProps> = ({
   }, [purchase]);
 
   // Calculate totals when items change
-  useEffect(() => {
-    if (formData.items) {
-      const total = formData.items.reduce((sum, item) => sum + item.total, 0);
-      setFormData(prev => ({
-        ...prev,
-        totalAmount: total,
-      }));
-    }
-  }, [formData.items]);
+useEffect(() => {
+  if (formData.items) {
+    const total = formData.items.reduce((sum, item) => sum + item.total, 0);
+    setFormData(prev => {
+      // Only update if the total has changed
+      if (prev.totalAmount !== total) {
+        return {
+          ...prev,
+          totalAmount: total,
+        };
+      }
+      return prev;
+    });
+  }
+}, [formData.items]);
 
   // Calculate paid amount when payments change
-  useEffect(() => {
-    if (formData.payments) {
-      const paid = formData.payments.reduce((sum, payment) => sum + payment.amount, 0);
-      
-      // Update paid amount and status
-      setFormData(prev => {
-        const newStatus = determineStatus(paid, prev.totalAmount || 0);
+useEffect(() => {
+  if (formData.payments) {
+    const paid = formData.payments.reduce((sum, payment) => sum + payment.amount, 0);
+    
+    // Update paid amount and status
+    setFormData(prev => {
+      const newStatus = determineStatus(paid, prev.totalAmount || 0);
+      // Only update if values have changed
+      if (prev.paidAmount !== paid || prev.status !== newStatus) {
         return {
           ...prev,
           paidAmount: paid,
           status: newStatus,
         };
-      });
-    }
-  }, [formData.payments]);
+      }
+      return prev;
+    });
+  }
+}, [formData.payments]);
 
   // Helper function to determine status based on payment
   const determineStatus = (paidAmount: number, totalAmount: number): Purchase['status'] => {
